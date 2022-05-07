@@ -1,11 +1,30 @@
-ESP-IDF template app
-====================
+Dollar Exchange
+===============
 
-This is a template application to be used with [Espressif IoT Development Framework](https://github.com/espressif/esp-idf).
+[![stability-wip](https://img.shields.io/badge/stability-wip-lightgrey.svg)](https://github.com/mkenney/software-guides/blob/master/STABILITY-BADGES.md#work-in-progress)
 
-Please check [ESP-IDF docs](https://docs.espressif.com/projects/esp-idf/en/latest/get-started/index.html) for getting started instructions.
+This is the soul of a gadget, made for my son, to help him to check the worth
+of his dollars. It connects to our wifi network, fetches the current exchange
+rate, multiply that with 50 (the amount of dollars he owns), and shows the
+result on a 8 digit 7-segment LED display.
 
-*Code in this repository is in the Public Domain (or CC0 licensed, at your option.)
-Unless required by applicable law or agreed to in writing, this
-software is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
-CONDITIONS OF ANY KIND, either express or implied.*
+Installation
+------------
+
+Set up the wifi SSID and password:
+
+```sh
+make menuconfig
+```
+
+Then compile the project:
+
+```sh
+make
+```
+
+And finally upload the binaries to the esp board:
+
+```sh
+make install
+```

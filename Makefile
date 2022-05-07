@@ -1,9 +1,35 @@
-#
-# This is a project Makefile. It is assumed the directory this Makefile resides in is a
-# project subdirectory.
-#
+PORT ?= /dev/cu.usbserial-0001
 
-PROJECT_NAME := app-template
+idf_bin := idf.py
 
-include $(IDF_PATH)/make/project.mk
+.PHONY: build
+build:
+	$(idf_bin) build
 
+.PHONY: menuconfig
+menuconfig:
+	$(idf_bin) menuconfig
+
+.PHONY: clean
+clean:
+	$(idf_bin) clean
+
+.PHONY: install
+install:
+	$(idf_bin) flash -p $(PORT)
+
+.PHONY: uninstall
+uninstall:
+	$(idf_bin) -p $(PORT) erase-flash
+
+.PHONY: info
+info:
+	$(idf_bin) size
+
+.PHONY: erase
+erase:
+	$(idf_bin) erase-flash
+
+.PHONY: monitor
+monitor:
+	$(idf_bin) monitor -p $(PORT)
