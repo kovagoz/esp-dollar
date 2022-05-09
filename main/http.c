@@ -4,15 +4,10 @@
 #include "esp_log.h"
 #include "http.h"
 
-#define MAX_HTTP_OUTPUT_BUFFER 2048
-
 static const char *TAG = "http";
 
 esp_err_t http_event_handler(esp_http_client_event_t *evt)
 {
-    static char *output_buffer;
-    static int output_len;
-
     switch(evt->event_id) {
         case HTTP_EVENT_ERROR:
             ESP_LOGD(TAG, "HTTP_EVENT_ERROR");
@@ -33,25 +28,9 @@ esp_err_t http_event_handler(esp_http_client_event_t *evt)
         case HTTP_EVENT_ON_DATA:
             ESP_LOGD(TAG, "HTTP_EVENT_ON_DATA, len=%d", evt->data_len);
 
-            if (!esp_http_client_is_chunked_response(evt->client)) {
-                if (evt->user_data) {
-                    memcpy(evt->user_data + output_len, evt->data, evt->data_len);
-                } else {
-                    if (output_buffer == NULL) {
-                        output_buffer = (char *) malloc(esp_http_client_get_content_length(evt->client));
-                        output_len = 0;
-
-                        if (output_buffer == NULL) {
-                            ESP_LOGE(TAG, "Failed to allocate memory for output buffer");
-                            return ESP_FAIL;
-                        }
-                    }
-
-                    memcpy(output_buffer + output_len, evt->data, evt->data_len);
-                }
-
-                output_len += evt->data_len;
-            }
+            memcpy(evt->user_data, evt->data, evt->data_len);
+            // Close the character string with NULL
+            memset(evt->user_data + evt->data_len, 0, 1);
 
             break;
 
@@ -66,25 +45,10 @@ esp_err_t http_event_handler(esp_http_client_event_t *evt)
                 ESP_LOGI(TAG, "Last mbedtls failure: 0x%x", mbedtls_err);
             }
 
-            if (output_buffer != NULL) {
-                free(output_buffer);
-                output_buffer = NULL;
-            }
-
-            output_len = 0;
-
             break;
 
         case HTTP_EVENT_ON_FINISH:
             ESP_LOGD(TAG, "HTTP_EVENT_ON_FINISH");
-
-            if (output_buffer != NULL) {
-                free(output_buffer);
-                output_buffer = NULL;
-            }
-
-            output_len = 0;
-
             break;
 
         case HTTP_EVENT_REDIRECT:
@@ -95,16 +59,14 @@ esp_err_t http_event_handler(esp_http_client_event_t *evt)
     return ESP_OK;
 }
 
-void http_get()
+http_response_t *http_get(http_request_t *request)
 {
-    char local_response_buffer[MAX_HTTP_OUTPUT_BUFFER] = {0};
+    http_response_t *response = malloc(sizeof(http_response_t));
 
     esp_http_client_config_t config = {
-        .host = "httpbin.org",
-        .path = "/get",
-        .query = "esp",
+        .url = request->url,
         .event_handler = http_event_handler,
-        .user_data = local_response_buffer,
+        .user_data = response->body,
         .disable_auto_redirect = true,
     };
 
@@ -112,14 +74,16 @@ void http_get()
     esp_err_t err = esp_http_client_perform(client);
 
     if (err == ESP_OK) {
+        response->status_code = esp_http_client_get_status_code(client);
+
         ESP_LOGI(TAG, "HTTP GET Status = %d, content_length = %lld",
-            esp_http_client_get_status_code(client),
+            response->status_code,
             esp_http_client_get_content_length(client));
     } else {
         ESP_LOGE(TAG, "HTTP GET request failed: %s", esp_err_to_name(err));
     }
 
-    ESP_LOG_BUFFER_HEX(TAG, local_response_buffer, strlen(local_response_buffer));
-
     esp_http_client_cleanup(client);
+
+    return response;
 }

@@ -9,7 +9,26 @@ static const char *TAG = "app";
 
 static void http_test_task(void *pvParameters)
 {
-    http_get();
+    // TODO ability to set timeout
+    http_request_t request = {
+        .url = "http://raspberrypi.local/usd",
+    };
+
+    http_response_t *response = http_get(&request);
+
+    if (response->status_code == 200) {
+        ESP_LOGI(TAG, "|%s|", response->body);
+    } else {
+        ESP_LOGE(TAG, "Something went wrong");
+    }
+
+    free(response);
+
+    // Zero means error
+//    int result = (int) round(atof(local_response_buffer) * 50);
+//
+//    ESP_LOGI(TAG, "USD to HUF: %i", result);
+
     ESP_LOGI(TAG, "Finish http example");
     vTaskDelete(NULL);
 }

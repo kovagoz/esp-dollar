@@ -1,6 +1,15 @@
 #ifndef HTTP_H
 #define HTTP_H
 
-void http_get();
+typedef struct {
+    const char *url;
+} http_request_t;
+
+typedef struct {
+    char *body;
+    int status_code;
+} http_response_t;
+
+http_response_t *http_get(http_request_t *request);
 
 #endif
