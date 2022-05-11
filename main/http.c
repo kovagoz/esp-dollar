@@ -68,6 +68,7 @@ http_response_t *http_get(http_request_t *request)
         .event_handler = http_event_handler,
         .user_data = response->body,
         .disable_auto_redirect = true,
+        .timeout_ms = request->timeout_ms ?: 500,
     };
 
     esp_http_client_handle_t client = esp_http_client_init(&config);

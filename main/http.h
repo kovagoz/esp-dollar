@@ -3,6 +3,7 @@
 
 typedef struct {
     const char *url;
+    int timeout_ms;
 } http_request_t;
 
 typedef struct {

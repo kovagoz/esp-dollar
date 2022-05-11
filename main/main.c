@@ -9,9 +9,9 @@ static const char *TAG = "app";
 
 static void http_test_task(void *pvParameters)
 {
-    // TODO ability to set timeout
     http_request_t request = {
         .url = "http://raspberrypi.local/usd",
+        .timeout_ms = 3000,
     };
 
     http_response_t *response = http_get(&request);
