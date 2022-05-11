@@ -65,6 +65,7 @@ http_response_t *http_exec(http_request_t *request)
 
     esp_http_client_config_t config = {
         .url = request->url,
+        .method = request->method ?: HTTP_METHOD_GET,
         .event_handler = http_event_handler,
         .user_data = response->body,
         .disable_auto_redirect = true,

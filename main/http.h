@@ -1,8 +1,13 @@
 #ifndef HTTP_H
 #define HTTP_H
 
+#include "esp_http_client.h"
+
+typedef esp_http_client_method_t http_method_t;
+
 typedef struct {
     const char *url;
+    http_method_t method;
     int timeout_ms;
 } http_request_t;
 
