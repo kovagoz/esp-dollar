@@ -11,6 +11,6 @@ typedef struct {
     int status_code;
 } http_response_t;
 
-http_response_t *http_get(http_request_t *request);
+http_response_t *http_exec(http_request_t *request);
 
 #endif

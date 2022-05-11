@@ -59,7 +59,7 @@ esp_err_t http_event_handler(esp_http_client_event_t *evt)
     return ESP_OK;
 }
 
-http_response_t *http_get(http_request_t *request)
+http_response_t *http_exec(http_request_t *request)
 {
     http_response_t *response = malloc(sizeof(http_response_t));
 

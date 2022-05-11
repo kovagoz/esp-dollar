@@ -14,7 +14,7 @@ static void http_test_task(void *pvParameters)
         .timeout_ms = 3000,
     };
 
-    http_response_t *response = http_get(&request);
+    http_response_t *response = http_exec(&request);
 
     if (response->status_code == 200) {
         ESP_LOGI(TAG, "|%s|", response->body);
