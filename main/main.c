@@ -1,35 +1,50 @@
 #include <stdio.h>
+#include <math.h>
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "esp_log.h"
 #include "wifi.h"
 #include "http.h"
+#include "cJSON.h"
 
 static const char *TAG = "app";
 
 static void http_test_task(void *pvParameters)
 {
+    // TODO set auth header
     http_request_t request = {
-        .url = "http://raspberrypi.local/usd",
+        .url = "http://kovi.local:8000/",
         .timeout_ms = 3000,
     };
 
     http_response_t *response = http_exec(&request);
 
     if (response->status_code == 200) {
-        ESP_LOGI(TAG, "|%s|", response->body);
+        // Extract the exchange rate from the HTTP response
+        cJSON *root = cJSON_Parse(response->body);
+        double exchange_rate = cJSON_GetObjectItem(root, "result")->valuedouble;
+        cJSON_Delete(root);
+
+        ESP_LOGI(TAG, "1 USD = %f HUF", exchange_rate);
+
+        // Calculate how much HUF the 50 USD is worth
+        int result = (int) round(exchange_rate * 50);
+
+        // Zero means error (problem with the atof() conversion)
+        if (result == 0) {
+            ESP_LOGE(TAG, "Failed to fetch the exchange rate");
+        } else {
+            ESP_LOGI(TAG, "50 USD to HUF = %i", result);
+        }
     } else {
         ESP_LOGE(TAG, "Something went wrong");
     }
 
+    free(response->body);
     free(response);
 
-    // Zero means error
-//    int result = (int) round(atof(local_response_buffer) * 50);
-//
-//    ESP_LOGI(TAG, "USD to HUF: %i", result);
-
     ESP_LOGI(TAG, "Finish http example");
+
     vTaskDelete(NULL);
 }
 

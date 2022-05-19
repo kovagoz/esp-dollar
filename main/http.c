@@ -5,8 +5,9 @@
 #include "http.h"
 
 static const char *TAG = "http";
+static http_response_t *response;
 
-esp_err_t http_event_handler(esp_http_client_event_t *evt)
+static esp_err_t http_event_handler(esp_http_client_event_t *evt)
 {
     switch(evt->event_id) {
         case HTTP_EVENT_ERROR:
@@ -28,9 +29,10 @@ esp_err_t http_event_handler(esp_http_client_event_t *evt)
         case HTTP_EVENT_ON_DATA:
             ESP_LOGD(TAG, "HTTP_EVENT_ON_DATA, len=%d", evt->data_len);
 
-            memcpy(evt->user_data, evt->data, evt->data_len);
-            // Close the character string with NULL
-            memset(evt->user_data + evt->data_len, 0, 1);
+            // Allocate memory for body in the response structure
+            // Use calloc() to make sure that the terminal character is zero
+            response->body = calloc(evt->data_len + 1, sizeof(char));
+            memcpy(response->body, evt->data, evt->data_len);
 
             break;
 
@@ -40,6 +42,7 @@ esp_err_t http_event_handler(esp_http_client_event_t *evt)
             int mbedtls_err = 0;
 
             esp_err_t err = esp_tls_get_and_clear_last_error((esp_tls_error_handle_t) evt->data, &mbedtls_err, NULL);
+
             if (err != 0) {
                 ESP_LOGI(TAG, "Last esp error code: 0x%x", err);
                 ESP_LOGI(TAG, "Last mbedtls failure: 0x%x", mbedtls_err);
@@ -61,13 +64,12 @@ esp_err_t http_event_handler(esp_http_client_event_t *evt)
 
 http_response_t *http_exec(http_request_t *request)
 {
-    http_response_t *response = malloc(sizeof(http_response_t));
+    response = malloc(sizeof(http_response_t));
 
     esp_http_client_config_t config = {
         .url = request->url,
         .method = request->method ?: HTTP_METHOD_GET,
         .event_handler = http_event_handler,
-        .user_data = response->body,
         .disable_auto_redirect = true,
         .timeout_ms = request->timeout_ms ?: 500,
     };
