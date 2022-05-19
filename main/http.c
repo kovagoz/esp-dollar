@@ -62,19 +62,26 @@ static esp_err_t http_event_handler(esp_http_client_event_t *evt)
     return ESP_OK;
 }
 
-http_response_t *http_exec(http_request_t *request)
+http_client_t http_create_client(char *uri)
+{
+    esp_http_client_config_t config = {
+        .url = uri,
+        .event_handler = http_event_handler,
+        .disable_auto_redirect = true,
+    };
+
+    return esp_http_client_init(&config);
+}
+
+void http_set_header(http_client_t client, char *name, char *value)
+{
+    esp_http_client_set_header(client, name, value);
+}
+
+http_response_t *http_exec(http_client_t client)
 {
     response = malloc(sizeof(http_response_t));
 
-    esp_http_client_config_t config = {
-        .url = request->url,
-        .method = request->method ?: HTTP_METHOD_GET,
-        .event_handler = http_event_handler,
-        .disable_auto_redirect = true,
-        .timeout_ms = request->timeout_ms ?: 500,
-    };
-
-    esp_http_client_handle_t client = esp_http_client_init(&config);
     esp_err_t err = esp_http_client_perform(client);
 
     if (err == ESP_OK) {

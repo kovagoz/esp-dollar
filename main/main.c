@@ -3,24 +3,20 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "esp_log.h"
+#include "cJSON.h"
 #include "wifi.h"
 #include "http.h"
-#include "cJSON.h"
 
 static const char *TAG = "app";
 
 static void http_test_task(void *pvParameters)
 {
-    // TODO set auth header
-    http_request_t request = {
-        .url = "http://kovi.local:8000/",
-        .timeout_ms = 3000,
-    };
-
-    http_response_t *response = http_exec(&request);
+    http_client_t client = http_create_client("http://kovi.local:8000/");
+    http_set_header(client, "apikey", "almafa");
+    http_response_t *response = http_exec(client);
 
     if (response->status_code == 200) {
-        // Extract the exchange rate from the HTTP response
+        // Extract exchange rate from the HTTP response
         cJSON *root = cJSON_Parse(response->body);
         double exchange_rate = cJSON_GetObjectItem(root, "result")->valuedouble;
         cJSON_Delete(root);
@@ -34,7 +30,7 @@ static void http_test_task(void *pvParameters)
         if (result == 0) {
             ESP_LOGE(TAG, "Failed to fetch the exchange rate");
         } else {
-            ESP_LOGI(TAG, "50 USD to HUF = %i", result);
+            ESP_LOGI(TAG, "50 USD = %i HUF", result);
         }
     } else {
         ESP_LOGE(TAG, "Something went wrong");
