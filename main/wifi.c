@@ -3,31 +3,11 @@
 #include <esp_event.h>
 #include <esp_err.h>
 #include <esp_wifi.h>
-#include <nvs_flash.h>
 
 #define WIFI_CONNECTED_BIT BIT0
 #define WIFI_FAIL_BIT BIT1
 
 static EventGroupHandle_t wifi_event_group;
-
-/**
- * Initialize the non-volatile storage (flash).
- *
- * NVS is used to store WiFi radio data permanently.
- *
- * @return void
- */
-static void nvs_init()
-{
-	esp_err_t ret = nvs_flash_init();
-
-	if (ret == ESP_ERR_NVS_NO_FREE_PAGES || ret == ESP_ERR_NVS_NEW_VERSION_FOUND) {
-		ESP_ERROR_CHECK(nvs_flash_erase());
-		ret = nvs_flash_init();
-	}
-
-	ESP_ERROR_CHECK(ret);
-}
 
 static void wifi_event_listener(
 	void *arg,
@@ -73,8 +53,6 @@ static void wifi_event_init()
 
 esp_err_t wifi_connect()
 {
-	nvs_init();
-
 	// We use this event group to signal the result of connection.
 	wifi_event_group = xEventGroupCreate();
 
