@@ -21,7 +21,7 @@ double get_exchange_rate(char currency[3])
 {
     double exchange_rate = -1;
     // TODO set the proper URL
-    char *uri = "http://kovi.local:8000/?amount=1&to=HUF&from=";
+    char uri[] = "http://kovi.local:8000/?amount=1&to=HUF&from=";
 
     strcat(uri, currency);
 
