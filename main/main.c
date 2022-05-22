@@ -4,8 +4,10 @@
 #include "esp_log.h"
 #include "nvs.h"
 #include "nvs_flash.h"
-#include "wifi.h"
+
+#include "clock.h"
 #include "currency.h"
+#include "wifi.h"
 
 static const char *TAG = "app";
 
@@ -28,8 +30,11 @@ void app_main(void)
 {
     ESP_LOGI(TAG, "Starting main task");
 
+    timezone_set(CLOCK_TZ_EUROPE_BUDAPEST);
+
     esp_err_t err;
 
+    // TODO move flash init to somewhere
     err = nvs_flash_init();
 
     if (err == ESP_ERR_NVS_NO_FREE_PAGES || err == ESP_ERR_NVS_NEW_VERSION_FOUND) {
@@ -39,29 +44,9 @@ void app_main(void)
 
     ESP_ERROR_CHECK(err);
 
-    nvs_handle_t nvs_handler;
-
-    ESP_ERROR_CHECK(nvs_open("app", NVS_READWRITE, &nvs_handler));
-
-    size_t size;
-
-    err = nvs_get_str(nvs_handler, "USD", NULL, &size);
-
-    // If found
-    if (err == ESP_OK) {
-        char *out = malloc(size);
-        ESP_ERROR_CHECK(nvs_get_str(nvs_handler, "USD", out, &size));
-        ESP_LOGI(TAG, "%s", out);
-    }
-
-    nvs_close(nvs_handler);
-
-    if (err == ESP_ERR_NVS_NOT_FOUND) {
-        if (wifi_connect() == ESP_OK) {
-            ESP_LOGI(TAG, "WiFi connected");
-            xTaskCreate(&http_test_task, "http_test_task", 8192, NULL, 5, NULL);
-        } else {
-            ESP_LOGE(TAG, "WiFi connection failed");
-        }
+    if (wifi_connect() == ESP_OK) {
+        ntp_start();
+        ntp_wait_for_sync();
+        xTaskCreate(&http_test_task, "http_test_task", 8192, NULL, 5, NULL);
     }
 }
