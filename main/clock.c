@@ -1,8 +1,10 @@
+#include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
 #include "esp_log.h"
 #include "esp_sntp.h"
 #include "time.h"
 
-static const char *TAG = "clock";
+static const char *TAG = "ntp";
 
 void timezone_set(const char *timezone)
 {
