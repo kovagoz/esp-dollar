@@ -1,6 +1,9 @@
+#include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 #include "esp_log.h"
 #include "cJSON.h"
+#include "cache.h"
 #include "http.h"
 
 static const char *TAG = "currency";
@@ -17,8 +20,10 @@ static double extract_exchange_rate(http_response_t *response)
     return exchange_rate;
 }
 
-double get_exchange_rate(char currency[3])
+static double fetch_exchange_rate(char currency[3])
 {
+    return 365.14;
+
     double exchange_rate = -1;
     // TODO set the proper URL
     char uri[] = "http://kovi.local:8000/?amount=1&to=HUF&from=";
@@ -38,6 +43,21 @@ double get_exchange_rate(char currency[3])
 
     free(response->body);
     free(response);
+
+    return exchange_rate;
+}
+
+double get_exchange_rate(char currency[3])
+{
+    char *cache_result = NULL;
+
+    if (cache_read(currency, &cache_result) == ESP_OK) {
+        return strtod(cache_result, NULL);
+    }
+
+    double exchange_rate = fetch_exchange_rate(currency);
+
+    // TODO store in chache
 
     return exchange_rate;
 }
