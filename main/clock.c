@@ -4,7 +4,7 @@
 #include "esp_sntp.h"
 #include "time.h"
 
-static const char *TAG = "ntp";
+static const char *TAG = "clock";
 
 void timezone_set(const char *timezone)
 {
@@ -14,7 +14,7 @@ void timezone_set(const char *timezone)
 
 void ntp_sync()
 {
-    ESP_LOGI(TAG, "Starting sync");
+    ESP_LOGI(TAG, "Start NTP syncing");
 
     sntp_setoperatingmode(SNTP_OPMODE_POLL);
     sntp_setservername(0, "pool.ntp.org");
