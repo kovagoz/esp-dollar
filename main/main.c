@@ -45,8 +45,7 @@ void app_main(void)
     ESP_ERROR_CHECK(err);
 
     if (wifi_connect() == ESP_OK) {
-        ntp_start();
-        ntp_wait_for_sync();
+        ntp_sync();
         xTaskCreate(&http_test_task, "http_test_task", 8192, NULL, 5, NULL);
     }
 }
