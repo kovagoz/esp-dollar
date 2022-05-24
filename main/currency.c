@@ -49,10 +49,10 @@ static double fetch_exchange_rate(char currency[3])
 
 double get_exchange_rate(char currency[3])
 {
-    char *cache_result = NULL;
+    cache_result_t *cache_result = cache_read(currency);
 
-    if (cache_read(currency, &cache_result) == ESP_OK) {
-        return strtod(cache_result, NULL);
+    if (cache_result->found) {
+        return strtod(cache_result->value, NULL);
     }
 
     double exchange_rate = fetch_exchange_rate(currency);
