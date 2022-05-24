@@ -16,16 +16,21 @@ cache_item_t *cache_read(char *key)
 
     cache_item_t *item = malloc(sizeof(cache_item_t));
 
-    if (err == ESP_OK) {
-        ESP_LOGI(TAG, "Found %s", key);
-        item->found = CACHE_FOUND;
-        item->value = malloc(size);
-        ESP_ERROR_CHECK(nvs_get_str(nvs_handler, key, item->value, &size));
-    }
+    switch(err) {
+        case ESP_OK:
+            ESP_LOGI(TAG, "Found %s", key);
+            item->found = CACHE_FOUND;
+            item->value = malloc(size);
+            ESP_ERROR_CHECK(nvs_get_str(nvs_handler, key, item->value, &size));
+            break;
 
-    if (err == ESP_ERR_NVS_NOT_FOUND) {
-        ESP_LOGI(TAG, "Not found %s", key);
-        item->found = CACHE_NOT_FOUND;
+        case ESP_ERR_NVS_NOT_FOUND:
+            ESP_LOGI(TAG, "Not found %s", key);
+            item->found = CACHE_NOT_FOUND;
+            break;
+
+        default:
+            ESP_ERROR_CHECK(err);
     }
 
     nvs_close(nvs_handler);
