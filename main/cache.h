@@ -9,4 +9,4 @@ typedef struct {
     int expires;
 } cache_result_t;
 
-cache_result_t *cache_read(char *currency);
+cache_result_t *cache_read(char *key);
