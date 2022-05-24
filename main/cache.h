@@ -7,6 +7,6 @@ typedef struct {
     unsigned char found;
     char *value;
     int expires;
-} cache_result_t;
+} cache_item_t;
 
-cache_result_t *cache_read(char *key);
+cache_item_t *cache_read(char *key);
