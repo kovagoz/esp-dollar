@@ -1,6 +1,5 @@
 #include <stdlib.h>
 #include <string.h>
-#include <unistd.h>
 #include "esp_log.h"
 #include "cJSON.h"
 #include "cache.h"
@@ -51,13 +50,15 @@ double get_exchange_rate(char currency[3])
 {
     cache_item_t *cache_item = cache_read(currency);
 
-    if (cache_item->found) {
-        return strtod(cache_item->value, NULL);
+    if (cache_item->status == CACHE_OK) {
+        return cache_item->value;
     }
 
     double exchange_rate = fetch_exchange_rate(currency);
 
-    // TODO store in chache
+    // TODO use stale cache is fetch is failed
+
+    cache_write(currency, exchange_rate, 60);
 
     return exchange_rate;
 }
