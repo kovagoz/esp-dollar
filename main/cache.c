@@ -54,6 +54,8 @@ cache_item_t *cache_read(char *key)
 
 void cache_write(char *key, double value, unsigned int ttl)
 {
+    ESP_LOGI(TAG, "Write %s", key);
+
     time_t expires_at = time(NULL) + ttl;
 
     cJSON *root = cJSON_CreateObject();
