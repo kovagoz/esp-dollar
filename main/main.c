@@ -4,7 +4,6 @@
 #include "esp_log.h"
 #include "nvs.h"
 #include "nvs_flash.h"
-
 #include "clock.h"
 #include "currency.h"
 #include "wifi.h"
@@ -26,16 +25,9 @@ static void http_test_task(void *pvParameters)
     vTaskDelete(NULL);
 }
 
-void app_main(void)
+static void nvs_init()
 {
-    ESP_LOGI(TAG, "Starting main task");
-
-    timezone_set(CLOCK_TZ_EUROPE_BUDAPEST);
-
-    esp_err_t err;
-
-    // TODO move flash init to somewhere
-    err = nvs_flash_init();
+    esp_err_t err = nvs_flash_init();
 
     if (err == ESP_ERR_NVS_NO_FREE_PAGES || err == ESP_ERR_NVS_NEW_VERSION_FOUND) {
         ESP_ERROR_CHECK(nvs_flash_erase());
@@ -43,6 +35,15 @@ void app_main(void)
     }
 
     ESP_ERROR_CHECK(err);
+}
+
+void app_main(void)
+{
+    ESP_LOGI(TAG, "Starting main task");
+
+    timezone_set(CLOCK_TZ_EUROPE_BUDAPEST);
+
+    nvs_init();
 
     if (wifi_connect() == ESP_OK) {
         ntp_sync();
