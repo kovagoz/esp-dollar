@@ -5,13 +5,15 @@
 #include "cache.h"
 #include "cJSON.h"
 
+#define CACHE_NAMESPACE "app"
+
 static const char *TAG = "cache";
 static nvs_handle_t nvs_handler;
 
 cache_item_t *cache_read(char *key)
 {
     esp_err_t err;
-    ESP_ERROR_CHECK(nvs_open("app", NVS_READONLY, &nvs_handler));
+    ESP_ERROR_CHECK(nvs_open(CACHE_NAMESPACE, NVS_READONLY, &nvs_handler));
 
     // Get the length of the string item stored in the cache
     size_t size;
@@ -58,7 +60,7 @@ void cache_write(char *key, double value, unsigned int ttl)
     cJSON_AddNumberToObject(root, CACHE_ITEM_FIELD_VALUE, value);
     cJSON_AddNumberToObject(root, CACHE_ITEM_FIELD_EXPIRATION, expires_at);
 
-    ESP_ERROR_CHECK(nvs_open("app", NVS_READWRITE, &nvs_handler));
+    ESP_ERROR_CHECK(nvs_open(CACHE_NAMESPACE, NVS_READWRITE, &nvs_handler));
     ESP_ERROR_CHECK(nvs_set_str(nvs_handler, key, cJSON_Print(root)));
     nvs_close(nvs_handler);
 }
