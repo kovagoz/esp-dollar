@@ -27,8 +27,8 @@ cache_item_t *cache_read(char *key)
             ESP_ERROR_CHECK(nvs_get_str(nvs_handler, key, json, &size));
 
             cJSON *root = cJSON_Parse(json);
-            item->value = cJSON_GetObjectItem(root, "val")->valuedouble;
-            double expires_at = cJSON_GetObjectItem(root, "exp")->valuedouble;
+            item->value = cJSON_GetObjectItem(root, CACHE_ITEM_FIELD_VALUE)->valuedouble;
+            double expires_at = cJSON_GetObjectItem(root, CACHE_ITEM_FIELD_EXPIRATION)->valuedouble;
             cJSON_Delete(root);
 
             item->status = time(NULL) > expires_at ? CACHE_EXPIRED : CACHE_OK;
@@ -55,8 +55,8 @@ void cache_write(char *key, double value, unsigned int ttl)
     time_t expires_at = time(NULL) + ttl;
 
     cJSON *root = cJSON_CreateObject();
-    cJSON_AddNumberToObject(root, "val", value);
-    cJSON_AddNumberToObject(root, "exp", expires_at);
+    cJSON_AddNumberToObject(root, CACHE_ITEM_FIELD_VALUE, value);
+    cJSON_AddNumberToObject(root, CACHE_ITEM_FIELD_EXPIRATION, expires_at);
 
     ESP_ERROR_CHECK(nvs_open("app", NVS_READWRITE, &nvs_handler));
     ESP_ERROR_CHECK(nvs_set_str(nvs_handler, key, cJSON_Print(root)));

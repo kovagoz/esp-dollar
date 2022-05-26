@@ -2,6 +2,9 @@
 #define CACHE_EXPIRED 1
 #define CACHE_NOT_FOUND 2
 
+#define CACHE_ITEM_FIELD_VALUE "val"
+#define CACHE_ITEM_FIELD_EXPIRATION "exp"
+
 typedef struct {
     unsigned char status;
     double value;
