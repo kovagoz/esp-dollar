@@ -10,7 +10,7 @@
 
 static const char *TAG = "main";
 
-static void http_test_task(void *pvParameters)
+static void show_result_task(void *pvParameters)
 {
     double exchange_rate = get_exchange_rate("USD");
 
@@ -47,6 +47,6 @@ void app_main(void)
 
     if (wifi_connect() == ESP_OK) {
         ntp_sync();
-        xTaskCreate(&http_test_task, "http_test_task", 8192, NULL, 5, NULL);
+        xTaskCreate(&show_result_task, "show_result_task", 8192, NULL, 5, NULL);
     }
 }
