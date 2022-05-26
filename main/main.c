@@ -8,7 +8,7 @@
 #include "currency.h"
 #include "wifi.h"
 
-static const char *TAG = "app";
+static const char *TAG = "main";
 
 static void http_test_task(void *pvParameters)
 {
