@@ -43,8 +43,9 @@ void app_main(void)
 
     timezone_set(CLOCK_TZ_EUROPE_BUDAPEST);
 
-    nvs_init();
+    nvs_init(); // Needed by cache and WiFi
 
+    // TODO Use stale cache on connection error
     if (wifi_connect() == ESP_OK) {
         ntp_sync();
         xTaskCreate(&show_result_task, "show_result_task", 8192, NULL, 5, NULL);

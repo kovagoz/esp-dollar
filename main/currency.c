@@ -19,6 +19,12 @@ static double extract_exchange_rate(http_response_t *response)
     return exchange_rate;
 }
 
+/**
+ * Fetch current exchange rate from the API.
+ *
+ * @param char currency[3] Three letter currency code.
+ * @return double Exchange rate or -1 on failure.
+ */
 static double fetch_exchange_rate(char currency[3])
 {
     return 365.14;
@@ -37,7 +43,8 @@ static double fetch_exchange_rate(char currency[3])
     if (response->status_code == 200) {
         exchange_rate = extract_exchange_rate(response);
     } else {
-        ESP_LOGE(TAG, "Something went wrong");
+        ESP_LOGE(TAG, "Could not fetch exchange data");
+        exchange_rate = -1;
     }
 
     free(response->body);
