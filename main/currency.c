@@ -27,17 +27,13 @@ static double extract_exchange_rate(http_response_t *response)
  */
 static double fetch_exchange_rate(char currency[3])
 {
-    return 365.14;
-
     double exchange_rate = -1;
-    // TODO set the proper URL
-    char uri[] = "http://kovi.local:8000/?amount=1&to=HUF&from=";
+    char uri[] = "https://api.apilayer.com/exchangerates_data/convert?amount=1&to=HUF&from=";
 
     strcat(uri, currency);
 
     http_client_t client = http_create_client(uri);
-    // TODO read from sdkconfig
-    http_set_header(client, "apikey", "...");
+    http_set_header(client, "apikey", CONFIG_APP_CURRENCY_API_KEY);
     http_response_t *response = http_exec(client);
 
     if (response->status_code == 200) {

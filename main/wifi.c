@@ -71,8 +71,8 @@ esp_err_t wifi_connect()
     // WiFi settings
     wifi_config_t wifi_config = {
         .sta = {
-            .ssid = CONFIG_ESP_WIFI_SSID,
-            .password = CONFIG_ESP_WIFI_PASSWORD,
+            .ssid = CONFIG_APP_WIFI_SSID,
+            .password = CONFIG_APP_WIFI_PASSWORD,
             // The weakest authmode to accept
             .threshold.authmode = WIFI_AUTH_WPA2_PSK,
         }

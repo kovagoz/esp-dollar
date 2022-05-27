@@ -35,6 +35,8 @@ cache_item_t *cache_read(char *key)
 
             item->status = time(NULL) > expires_at ? CACHE_EXPIRED : CACHE_OK;
 
+            // TODO log if item is expired
+
             free(json);
             break;
 
