@@ -18,9 +18,14 @@ char *cache_read()
 
     if (err == ESP_OK) {
         ESP_LOGI(TAG, "Cache found");
-        // TODO check result of memory allocation
+
         cache_item = malloc(size);
-        // TODO return NULL if fails
+
+        if (cache_item == NULL) {
+            ESP_LOGE(TAG, "Fail to allocate memory for cache item");
+            return NULL;
+        }
+
         ESP_ERROR_CHECK(nvs_get_str(nvs_handler, "usd", cache_item, &size));
     } else {
         ESP_LOGI(TAG, "Cache not found");
