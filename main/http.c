@@ -88,15 +88,16 @@ char *http_fetch_data()
         ESP_LOGI(TAG, "HTTP GET Status = %d, content_length = %lld",
             esp_http_client_get_status_code(client),
             esp_http_client_get_content_length(client));
-    } else {
-        ESP_LOGE(TAG, "HTTP GET request failed: %s", esp_err_to_name(err));
     }
 
     esp_http_client_cleanup(client);
 
-    if (response != NULL) {
-        ESP_LOGD(TAG, "Response body is: %s", response);
+    if (err != ESP_OK) {
+        ESP_LOGE(TAG, "HTTP GET request failed: %s", esp_err_to_name(err));
+        return NULL;
     }
+
+    ESP_LOGD(TAG, "Response body is: %s", response);
 
     return response;
 }
