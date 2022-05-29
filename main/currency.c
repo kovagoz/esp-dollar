@@ -12,8 +12,21 @@ static const char *TAG = "currency";
  */
 static double extract_exchange_rate(http_response_t *response)
 {
+    double exchange_rate;
     cJSON *root = cJSON_Parse(response->body);
-    double exchange_rate = cJSON_GetObjectItem(root, "result")->valuedouble;
+
+    if (root == NULL) {
+        const char *err = cJSON_GetErrorPtr();
+
+        if (err != NULL) {
+            ESP_LOGE(TAG, "Error before: %s", err);
+        }
+
+        exchange_rate = -1;
+    } else {
+        exchange_rate = cJSON_GetObjectItem(root, "result")->valuedouble;
+    }
+
     cJSON_Delete(root);
 
     return exchange_rate;
@@ -37,7 +50,8 @@ static double fetch_exchange_rate(char currency[3])
     http_response_t *response = http_exec(client);
 
     if (response->status_code == 200) {
-        exchange_rate = extract_exchange_rate(response);
+        //exchange_rate = extract_exchange_rate(response);
+        return 365.12;
     } else {
         ESP_LOGE(TAG, "Could not fetch exchange data");
         exchange_rate = -1;

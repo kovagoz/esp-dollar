@@ -1,70 +1,43 @@
-#include <time.h>
-#include "esp_log.h"
 #include "esp_err.h"
+#include "esp_log.h"
 #include "nvs.h"
-#include "cache.h"
-#include "cJSON.h"
-
-#define CACHE_NAMESPACE "app"
 
 static const char *TAG = "cache";
-static nvs_handle_t nvs_handler;
 
-cache_item_t *cache_read(char *key)
+char *cache_read()
 {
-    esp_err_t err;
-    ESP_ERROR_CHECK(nvs_open(CACHE_NAMESPACE, NVS_READONLY, &nvs_handler));
+    ESP_LOGI(TAG, "Read cache");
 
-    // Get the length of the string item stored in the cache
+    char *cache_item = NULL;
+    nvs_handle_t nvs_handler;
+
+    ESP_ERROR_CHECK(nvs_open("app", NVS_READONLY, &nvs_handler));
+
     size_t size;
-    err = nvs_get_str(nvs_handler, key, NULL, &size);
+    esp_err_t err = nvs_get_str(nvs_handler, "usd", NULL, &size);
 
-    cache_item_t *item = malloc(sizeof(cache_item_t));
-
-    switch(err) {
-        case ESP_OK:
-            ESP_LOGI(TAG, "Found %s", key);
-
-            char *json = malloc(size);
-            ESP_ERROR_CHECK(nvs_get_str(nvs_handler, key, json, &size));
-
-            cJSON *root = cJSON_Parse(json);
-            item->value = cJSON_GetObjectItem(root, CACHE_ITEM_FIELD_VALUE)->valuedouble;
-            double expires_at = cJSON_GetObjectItem(root, CACHE_ITEM_FIELD_EXPIRATION)->valuedouble;
-            cJSON_Delete(root);
-
-            item->status = time(NULL) > expires_at ? CACHE_EXPIRED : CACHE_OK;
-
-            // TODO log if item is expired
-
-            free(json);
-            break;
-
-        case ESP_ERR_NVS_NOT_FOUND:
-            ESP_LOGI(TAG, "Not found %s", key);
-            item->status = CACHE_NOT_FOUND;
-            break;
-
-        default:
-            ESP_ERROR_CHECK(err);
+    if (err == ESP_OK) {
+        ESP_LOGI(TAG, "Cache found");
+        // TODO check result of memory allocation
+        cache_item = malloc(size);
+        // TODO return NULL if fails
+        ESP_ERROR_CHECK(nvs_get_str(nvs_handler, "usd", cache_item, &size));
+    } else {
+        ESP_LOGI(TAG, "Cache not found");
     }
 
     nvs_close(nvs_handler);
 
-    return item;
+    return cache_item;
 }
 
-void cache_write(char *key, double value, unsigned int ttl)
+esp_err_t cache_write(char *data)
 {
-    ESP_LOGI(TAG, "Write %s", key);
-
-    time_t expires_at = time(NULL) + ttl;
-
-    cJSON *root = cJSON_CreateObject();
-    cJSON_AddNumberToObject(root, CACHE_ITEM_FIELD_VALUE, value);
-    cJSON_AddNumberToObject(root, CACHE_ITEM_FIELD_EXPIRATION, expires_at);
-
-    ESP_ERROR_CHECK(nvs_open(CACHE_NAMESPACE, NVS_READWRITE, &nvs_handler));
-    ESP_ERROR_CHECK(nvs_set_str(nvs_handler, key, cJSON_Print(root)));
+    ESP_LOGI(TAG, "Write cache");
+    nvs_handle_t nvs_handler;
+    ESP_ERROR_CHECK(nvs_open("app", NVS_READWRITE, &nvs_handler));
+    ESP_ERROR_CHECK(nvs_set_str(nvs_handler, "usd", data));
     nvs_close(nvs_handler);
+    // TODO really handle the errors
+    return ESP_OK;
 }

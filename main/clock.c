@@ -6,15 +6,9 @@
 
 static const char *TAG = "clock";
 
-void timezone_set(const char *timezone)
-{
-    setenv("TZ", timezone, 1);
-    tzset();
-}
-
 void ntp_sync()
 {
-    ESP_LOGI(TAG, "Start NTP syncing");
+    ESP_LOGI(TAG, "Starting NTP sync");
 
     sntp_setoperatingmode(SNTP_OPMODE_POLL);
     sntp_setservername(0, "pool.ntp.org");

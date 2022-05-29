@@ -1,30 +1,63 @@
-#include <math.h>
-#include "freertos/FreeRTOS.h"
-#include "freertos/task.h"
+#include "esp_err.h"
 #include "esp_log.h"
 #include "nvs.h"
 #include "nvs_flash.h"
+#include "cJSON.h"
+#include "cache.h"
 #include "clock.h"
-#include "currency.h"
+#include "http.h"
 #include "wifi.h"
 
 static const char *TAG = "main";
 
-static void show_result_task(void *pvParameters)
+typedef struct {
+    double rate;
+    unsigned int timestamp;
+} exchange_t;
+
+/**
+ * Parse the HTTP response received from APILayer.
+ */
+exchange_t *parse_data(char *json)
 {
-    double exchange_rate = get_exchange_rate("USD");
+    cJSON *root = cJSON_Parse(json);
 
-    int result = (int) round(exchange_rate * 50);
+    if (root == NULL) {
+        const char *err = cJSON_GetErrorPtr();
 
-    if (result == 0) {
-        ESP_LOGE(TAG, "Failed to fetch the exchange rate");
+        if (err != NULL) {
+            ESP_LOGE(TAG, "Error before: %s", err);
+        }
     } else {
-        ESP_LOGI(TAG, "50 USD = %i HUF", result);
+        exchange_t *exchange = malloc(sizeof(exchange_t));
+        exchange->rate = cJSON_GetObjectItem(root, "result")->valuedouble;
+        cJSON *info = cJSON_GetObjectItem(root, "info");
+        exchange->timestamp = cJSON_GetObjectItem(info, "timestamp")->valueint;
+        cJSON_Delete(root);
+
+        return exchange;
+    }
+
+    return NULL;
+}
+
+/**
+ * Update the cache with fresh data from APILayer.
+ */
+static void update_task(void *pvParameters)
+{
+    char *data = http_fetch_data();
+
+    if (data != NULL) {
+        cache_write(http_fetch_data());
     }
 
     vTaskDelete(NULL);
 }
 
+/**
+ * Prepare the non-volatile storage to use.
+ */
 static void nvs_init()
 {
     esp_err_t err = nvs_flash_init();
@@ -39,15 +72,34 @@ static void nvs_init()
 
 void app_main(void)
 {
-    ESP_LOGI(TAG, "Starting main task");
+    exchange_t *exchange;
 
-    timezone_set(CLOCK_TZ_EUROPE_BUDAPEST);
+    nvs_init();
 
-    nvs_init(); // Needed by cache and WiFi
+    char *cache_item = cache_read();
 
-    // TODO Use stale cache on connection error
     if (wifi_connect() == ESP_OK) {
-        ntp_sync();
-        xTaskCreate(&show_result_task, "show_result_task", 8192, NULL, 5, NULL);
+        if (cache_item != NULL) {
+            // Need the accurate time to check cache expiration
+            ntp_sync();
+
+            exchange = parse_data(cache_item);
+
+            // If cache is expired, try to update
+            if (time(NULL) - exchange->timestamp > 3600) {
+                ESP_LOGI(TAG, "Cache expired");
+                xTaskCreate(&update_task, "update_task", 8192, NULL, 5, NULL);
+            } else {
+                ESP_LOGI(TAG, "Cache is up to date");
+            }
+        }
+
+        // TODO wait till update has finished then read the cache again
+    } else if (cache_item != NULL) {
+        // Use stale cache if network is not available
+        exchange = parse_data(cache_item);
+        ESP_LOGI(TAG, "1 USD = %f HUF", exchange->rate);
+    } else {
+        // TODO No cache, no network: show error message
     }
 }
