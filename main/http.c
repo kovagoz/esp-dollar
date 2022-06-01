@@ -2,9 +2,10 @@
 #include "esp_log.h"
 #include "esp_http_client.h"
 #include "esp_tls.h"
+#include "esp_crt_bundle.h"
 
 static const char *TAG = "http";
-static char *response;
+static char *response = NULL;
 
 static esp_err_t http_event_handler(esp_http_client_event_t *evt)
 {
@@ -78,6 +79,7 @@ char *http_fetch_data()
         .url = "https://api.apilayer.com/exchangerates_data/convert?amount=1&to=HUF&from=USD",
         .event_handler = http_event_handler,
         .disable_auto_redirect = true,
+        .crt_bundle_attach = esp_crt_bundle_attach,
     };
 
     esp_http_client_handle_t client = esp_http_client_init(&config);
