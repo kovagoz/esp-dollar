@@ -16,7 +16,9 @@ typedef struct {
 } exchange_t;
 
 /**
- * Parse the HTTP response received from APILayer.
+ * Parse the HTTP response body received from APILayer.
+ *
+ * @return exchange_t* NULL if JSON parsing is failed
  */
 exchange_t *parse_data(char *json)
 {
@@ -70,17 +72,15 @@ void app_main(void)
 
     if (wifi_connect() == ESP_OK) {
         if (exchange != NULL) {
-            // Need the accurate time to check cache expiration
-            ntp_sync();
+            ntp_sync(); // Need the accurate time to check cache expiration
         }
 
         // If no cache or is expired, try to update
         if (exchange == NULL || time(NULL) - exchange->timestamp > 3600) {
             ESP_LOGI(TAG, "Fetch recent data");
 
-            // Drop the data read from cache
             if (data != NULL) {
-                free(data);
+                free(data); // Drop the data read from cache before
             }
 
             data = http_fetch_data();
