@@ -42,20 +42,6 @@ exchange_t *parse_data(char *json)
 }
 
 /**
- * Update the cache with fresh data from APILayer.
- */
-static void update_task(void *pvParameters)
-{
-    char *data = http_fetch_data();
-
-    if (data != NULL) {
-        cache_write(http_fetch_data());
-    }
-
-    vTaskDelete(NULL);
-}
-
-/**
  * Prepare the non-volatile storage to use.
  */
 static void nvs_init()
@@ -72,32 +58,44 @@ static void nvs_init()
 
 void app_main(void)
 {
-    exchange_t *exchange;
+    exchange_t *exchange = NULL;
 
     nvs_init();
 
-    char *cache_item = cache_read();
+    char *data = cache_read();
+
+    if (data != NULL) {
+        exchange = parse_data(data);
+    }
 
     if (wifi_connect() == ESP_OK) {
-        if (cache_item != NULL) {
+        if (exchange != NULL) {
             // Need the accurate time to check cache expiration
             ntp_sync();
-
-            exchange = parse_data(cache_item);
-
-            // If cache is expired, try to update
-            if (time(NULL) - exchange->timestamp > 3600) {
-                ESP_LOGI(TAG, "Cache expired");
-                xTaskCreate(&update_task, "update_task", 8192, NULL, 5, NULL);
-            } else {
-                ESP_LOGI(TAG, "Cache is up to date");
-            }
         }
 
-        // TODO wait till update has finished then read the cache again
-    } else if (cache_item != NULL) {
+        // If no cache or is expired, try to update
+        if (exchange == NULL || time(NULL) - exchange->timestamp > 3600) {
+            ESP_LOGI(TAG, "Fetch recent data");
+
+            // Drop the data read from cache
+            if (data != NULL) {
+                free(data);
+            }
+
+            data = http_fetch_data();
+
+            if (data != NULL) {
+                cache_write(data);
+                exchange = parse_data(data);
+            }
+        } else {
+            ESP_LOGI(TAG, "Cache is up to date");
+        }
+    }
+
+    if (exchange != NULL) {
         // Use stale cache if network is not available
-        exchange = parse_data(cache_item);
         ESP_LOGI(TAG, "1 USD = %f HUF", exchange->rate);
     } else {
         // TODO No cache, no network: show error message
