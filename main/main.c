@@ -1,3 +1,5 @@
+#include <freertos/FreeRTOS.h>
+#include <freertos/task.h>
 #include "esp_err.h"
 #include "esp_log.h"
 #include "nvs.h"
@@ -6,6 +8,7 @@
 #include "cache.h"
 #include "clock.h"
 #include "http.h"
+#include "led.h"
 #include "wifi.h"
 
 static const char *TAG = "main";
@@ -58,8 +61,12 @@ static void nvs_init()
     ESP_ERROR_CHECK(err);
 }
 
+TaskHandle_t spinner_task;
+
 void app_main(void)
 {
+    xTaskCreate(led_spinner_task, "LED spinner", 3072, NULL, configMAX_PRIORITIES / 2, &spinner_task);
+
     exchange_t *exchange = NULL;
 
     nvs_init();
@@ -94,10 +101,14 @@ void app_main(void)
         }
     }
 
+    vTaskDelete(spinner_task);
+    led_clear();
+
     if (exchange != NULL) {
         // Use stale cache if network is not available
         ESP_LOGI(TAG, "1 USD = %f HUF", exchange->rate);
+        led_show_number(50 * exchange->rate);
     } else {
-        // TODO No cache, no network: show error message
+        led_show_text("ERROR");
     }
 }
