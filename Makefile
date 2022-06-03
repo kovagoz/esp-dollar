@@ -1,4 +1,4 @@
-PORT ?= /dev/cu.usbserial-0001
+PORT ?= $(shell ls -1 /dev/cu.usbserial* | head -n1)
 
 idf_bin := idf.py
 
