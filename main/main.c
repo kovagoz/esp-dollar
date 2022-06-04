@@ -13,9 +13,11 @@
 
 static const char *TAG = "main";
 
+// Hold the decoded exchange rate data in this struct.
 typedef struct {
-    double rate;
-    unsigned int timestamp;
+    double rate; // Value of exchange rate
+    unsigned int timestamp; // When the data fetched from the API
+                            // (used to check cache expiration)
 } exchange_t;
 
 /**
@@ -65,24 +67,27 @@ TaskHandle_t spinner_task;
 
 void app_main(void)
 {
+    // Initiate the spinning animation
     xTaskCreate(led_spinner_task, "LED spinner", 3072, NULL, configMAX_PRIORITIES / 2, &spinner_task);
 
     exchange_t *exchange = NULL;
 
     nvs_init();
 
+    // At first, we try to read the exhange data from cache
     char *data = cache_read();
 
     if (data != NULL) {
         exchange = parse_data(data);
     }
 
+    // Use stale cache if network is not available
     if (wifi_connect() == ESP_OK) {
         if (exchange != NULL) {
             ntp_sync(); // Need the accurate time to check cache expiration
         }
 
-        // If no cache or is expired, try to update
+        // If not found in cache or is expired, try to update
         if (exchange == NULL || time(NULL) - exchange->timestamp > 3600) {
             ESP_LOGI(TAG, "Fetch recent data");
 
@@ -101,13 +106,13 @@ void app_main(void)
         }
     }
 
+    // Stop the spinner and clear the LED display
     vTaskDelete(spinner_task);
     led_clear();
 
     if (exchange != NULL) {
-        // Use stale cache if network is not available
         ESP_LOGI(TAG, "1 USD = %f HUF", exchange->rate);
-        led_show_number(50 * exchange->rate);
+        led_show_number(CONFIG_APP_AMOUNT_OF_DOLLARS * exchange->rate);
     } else {
         led_show_text("ERROR");
     }

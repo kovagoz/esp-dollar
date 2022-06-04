@@ -17,7 +17,11 @@ config APP_CURRENCY_API_KEY
 
 config APP_LED_BRIGHTNESS
 	int "Brightness of the LED display"
-	range 0 15
+	range 1 15
 	default 10
+
+config APP_AMOUNT_OF_DOLLARS
+	int "Amount of dollars you have"
+	default 50
 
 endmenu
