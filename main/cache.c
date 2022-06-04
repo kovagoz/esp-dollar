@@ -2,6 +2,9 @@
 #include "esp_log.h"
 #include "nvs.h"
 
+#define CACHE_NS  "app"
+#define CACHE_KEY "usd"
+
 static const char *TAG = "cache";
 
 char *cache_read()
@@ -11,10 +14,10 @@ char *cache_read()
     char *cache_item = NULL;
     nvs_handle_t nvs_handler;
 
-    ESP_ERROR_CHECK(nvs_open("app", NVS_READONLY, &nvs_handler));
+    ESP_ERROR_CHECK(nvs_open(CACHE_NS, NVS_READONLY, &nvs_handler));
 
     size_t size;
-    esp_err_t err = nvs_get_str(nvs_handler, "usd", NULL, &size);
+    esp_err_t err = nvs_get_str(nvs_handler, CACHE_KEY, NULL, &size);
 
     if (err == ESP_OK) {
         ESP_LOGI(TAG, "Cache found");
@@ -26,7 +29,7 @@ char *cache_read()
             return NULL;
         }
 
-        ESP_ERROR_CHECK(nvs_get_str(nvs_handler, "usd", cache_item, &size));
+        ESP_ERROR_CHECK(nvs_get_str(nvs_handler, CACHE_KEY, cache_item, &size));
     } else {
         ESP_LOGI(TAG, "Cache not found");
     }
@@ -40,8 +43,8 @@ esp_err_t cache_write(char *data)
 {
     ESP_LOGI(TAG, "Write cache");
     nvs_handle_t nvs_handler;
-    ESP_ERROR_CHECK(nvs_open("app", NVS_READWRITE, &nvs_handler));
-    ESP_ERROR_CHECK(nvs_set_str(nvs_handler, "usd", data));
+    ESP_ERROR_CHECK(nvs_open(CACHE_NS, NVS_READWRITE, &nvs_handler));
+    ESP_ERROR_CHECK(nvs_set_str(nvs_handler, CACHE_KEY, data));
     nvs_close(nvs_handler);
     // TODO really handle the errors
     return ESP_OK;
