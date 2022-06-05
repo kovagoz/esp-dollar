@@ -52,7 +52,8 @@ cd esp32-dollar-exchange
 git submodule update --init
 ```
 
-Set up the wifi SSID / password and the API key:
+Set up wifi SSID / password and the API key. Also set the stack size of
+main task to 8192 (Component config > ESP System Settings > Main task stack size).
 
 ```sh
 make menuconfig
