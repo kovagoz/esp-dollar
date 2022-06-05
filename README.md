@@ -8,10 +8,23 @@ of his dollars. It connects to our wifi network, fetches the current exchange
 rate, multiply that with 50 (the amount of dollars he owns), and shows the
 result on a 8 digit 7-segment LED display.
 
+Requirements
+------------
+
+### Hardware
+
+- Some kind of ESP32 board
+- MAX7219 controlled 8 digit, 7-segment LED display
+
+### Software
+
+- [Espressif IoT Development Framework](https://www.espressif.com/en/products/sdks/esp-idf)
+- make
+
 Installation
 ------------
 
-Set up the wifi SSID and password:
+Set up the wifi SSID / password and the API key for [APILayer](https://apilayer.com):
 
 ```sh
 make menuconfig
