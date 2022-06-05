@@ -1,7 +1,7 @@
 Dollar Exchange
 ===============
 
-[![stability-wip](https://img.shields.io/badge/stability-wip-lightgrey.svg)](https://github.com/mkenney/software-guides/blob/master/STABILITY-BADGES.md#work-in-progress)
+[![stability-beta](https://img.shields.io/badge/stability-beta-33bbff.svg)](https://github.com/mkenney/software-guides/blob/master/STABILITY-BADGES.md#beta)
 
 This is the soul of the gadget I make for my son to help him to check the worth
 of his dollars. It connects to our wifi network, fetches the current exchange
