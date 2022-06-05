@@ -23,7 +23,7 @@ Requirements
 
 ### Other
 
-- API key to [APILayer](https://apilayer.com)
+- API key to [APILayer.com](https://apilayer.com)
 
 Circuit
 -------
@@ -49,8 +49,7 @@ Get the code:
 ```sh
 git clone git@github.com:kovagoz/esp32-dollar-exchange.git
 cd esp32-dollar-exchange
-git submodule init
-git submodule update
+git submodule update --init
 ```
 
 Set up the wifi SSID / password and the API key:
