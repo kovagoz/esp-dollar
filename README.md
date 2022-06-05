@@ -21,10 +21,39 @@ Requirements
 - [Espressif IoT Development Framework](https://www.espressif.com/en/products/sdks/esp-idf)
 - make
 
+### Other
+
+- API key to [APILayer](https://apilayer.com)
+
+Circuit
+-------
+
+The program sends commands to the LED display through the SPI3 (also called VSPI)
+peripheral of ESP32. The wiring of the LED display in this case looks like this:
+
+```
++-------------+
+|             |                +--------------------------+
+|           23|----------------|DIN                       |
+|    ESP32  18|----------------|CLK       MAX7219         |
+|            5|----------------|CS                        |
+|             |                +--------------------------+
++-------------+
+```
+
 Installation
 ------------
 
-Set up the wifi SSID / password and the API key for [APILayer](https://apilayer.com):
+Get the code:
+
+```sh
+git clone git@github.com:kovagoz/esp32-dollar-exchange.git
+cd esp32-dollar-exchange
+git submodule init
+git submodule update
+```
+
+Set up the wifi SSID / password and the API key:
 
 ```sh
 make menuconfig
