@@ -3,10 +3,12 @@ Dollar Exchange
 
 [![stability-beta](https://img.shields.io/badge/stability-beta-33bbff.svg)](https://github.com/mkenney/software-guides/blob/master/STABILITY-BADGES.md#beta)
 
-This is the soul of the gadget I make for my son to help him to check the worth
+This is the soul of the gadget I made for my son to help him to check the worth
 of his dollars. It connects to our wifi network, fetches the current exchange
 rate, multiply that with 50 (the amount of dollars he owns), and shows the
 result on a 8 digit 7-segment LED display.
+
+![](https://res.cloudinary.com/kovagoz/image/upload/s--mYDQSnr0--/v1658162337/github/usdhuf.gif)
 
 Requirements
 ------------
